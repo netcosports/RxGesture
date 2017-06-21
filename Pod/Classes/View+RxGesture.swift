@@ -92,18 +92,17 @@ extension Reactive where Base: View {
         gesture.delegate = gesture.delegate ?? PermissiveGestureRecognizerDelegate.shared
 
         let source: Observable<G> = Observable
-            .create { observer in
+            .create { [weak control] observer in
                 MainScheduler.ensureExecutingOnScheduler()
 
-                control.addGestureRecognizer(gesture)
+                control?.addGestureRecognizer(gesture)
 
                 let disposable = genericGesture.rx.event
                     .map { $0 as! G }
-                    .startWith(gesture)
                     .bind(onNext: observer.onNext)
 
                 return Disposables.create {
-                    control.removeGestureRecognizer(gesture)
+                    control?.removeGestureRecognizer(gesture)
                     disposable.dispose()
                 }
             }
